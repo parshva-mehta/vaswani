@@ -62,7 +62,7 @@ def convert(s):
 
 def main():
     #df = pd.read_excel("C:/Users/Parshva/Documents/VSCode/mockdata.xlsx") #change based on machine program is run on
-    df = pd.read_excel("C:/Users/parsh/Downloads/mockdata.xlsx")
+    df = pd.read_excel("C:\Users\parsh\Documents\Visual_ Studio_Code\Python\macysdata.xlsx")
     #create a list of all store numbers under a certain week
     StoreList = df["STORE #"].tolist()
 
