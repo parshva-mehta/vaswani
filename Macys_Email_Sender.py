@@ -1,44 +1,57 @@
-
-#send all drafts
-#send only if date is present
-#send by week??
-
-
 from email.message import EmailMessage
-from optparse import Values
 import smtplib
 import ssl
+import sys
 import pandas as pd
 import PySimpleGUI as sg
 
 email_sender = 'parshvam7@gmail.com'
-email_reciever = 'parshvam7@gmail.com'
 email_password = 'iqnt kqiz xvvw kpdl' # [mfoh brao qunx vfrg] for parshva@vaswaniinc.com
 
-def createWindow(subject, body):
-    layout = [  [sg.Text("Accept email?")],
+week = input("Week number: ")
+min = 15
+max = 36
+
+
+
+def createWindow(subject, body, email):
+    sg.change_look_and_feel("Dark")
+    layout = [  
+                [sg.Text("Week Number: " + week)],
+                [sg.Text("This is going to: " + email)],
+                [sg.Text("Email Contents: ")],
+                [sg.Text("_" * 150)],
                 [sg.Text("Subject: " + subject)],
                 [sg.Text("Body: " + body)],
+                [sg.Text("_" * 150)],
                 [sg.Button("Accept")], 
-                [sg.Button("Deny")]
+                [sg.Button("Deny")],
+                [sg.Button("Quit")]
              ]
-    window = sg.Window("Email Preview", layout , margins=(250, 250))
+    
+    window = sg.Window("Email Preview", layout)
     while True:
         event, Values = window.read()
-        if event == "Accept" or event == "Deny" or event == sg.WIN_CLOSED:
+        if event == "Accept" or event == "Deny" or event == "Quit" or event == sg.WIN_CLOSED:
+            if event == "Quit":
+                sys.exit("User terminated")
             if event == "Accept":
                 em = EmailMessage()
                 em['From'] = email_sender
-                em['To'] = email_reciever
+                em['To'] = email
                 em['Subject'] = subject
+                em["Cc"] = "uzma@vaswaniinc.com, raj@vaswaniinc.com, kyle@vaswaniinc.com"
                 em.set_content(body)
 
                 context = ssl.create_default_context()
 
                 with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
                     smtp.login(email_sender, email_password)
-                    smtp.sendmail(email_sender, email_reciever, em.as_string())
+                    smtp.sendmail(email_sender, email, em.as_string())
+            elif event == "Deny":
+                break
             break
+                
     window.close()
 
 
@@ -48,13 +61,13 @@ def convert(s):
     return (str1.join(s))
 
 def main():
-    df = pd.read_excel("C:/Users/Parshva/Documents/VSCode/mockdata.xlsx") #change based on machine program is run on
-
+    #df = pd.read_excel("C:/Users/Parshva/Documents/VSCode/mockdata.xlsx") #change based on machine program is run on
+    df = pd.read_excel("C:/Users/parsh/Downloads/mockdata.xlsx")
     #create a list of all store numbers under a certain week
     StoreList = df["STORE #"].tolist()
 
     #create a list of emails (WORK IN PROGRESS)
-    emailList = df["EMAIL ADDRESS"].tolist()
+    email = df["EMAIL ADDRESS"].tolist()
 
     #create list of delivery dates
     ETAList = df["DELIVERY DATE"].tolist()
@@ -66,15 +79,19 @@ def main():
     subjectList = []
     bodyList = []
     nameList = []
+    emailList = []
 
     #depends on week
-    min = 2
-    max = 16
 
- 
-    for i in emailList:
-        splitEmail = i.split(".")
-        name = splitEmail[0]
+    #emailList = ["helloparshva@gmail.com", "parshvam7@gmail.com", "ruship217@gmail.com", "a","a","a","a","a","a","a","a","a","a","a","a","a"]
+
+    for i in email:
+        try:
+            splitEmail = i.split(".")
+            name = splitEmail[0]
+
+        except:
+            splitEmail = i
         if(name != "N/A - Store was called"):
             nameChar = ([*name])
             nameChar[0] = nameChar[0].upper()
@@ -86,7 +103,10 @@ def main():
 
 
 
-
+    for i in range(min, max-1):
+        emailID = email[i]
+        emailList.append(emailID)
+        
 
     for i in range(min, max-1):
         subject = f"{StoreList[i]}, Macy's at {StoreNames[i]}, {StateList[i]} - TOYS R US Fixture Installation Vendor Urgent"
@@ -120,21 +140,10 @@ def main():
     subject1 = subject
     body1 = body
 
-    #em = EmailMessage()
-    #em['From'] = email_sender
-    #em['To'] = email_reciever
-    #em['Subject'] = subject1
-    #em.set_content(body1)
-
-
-
-    createWindow(subject1, body1)
-    #with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-    #    smtp.login(email_sender, email_password)
-    #   smtp.sendmail(email_sender, email_reciever, em.as_string())
+    for i in range(len(subjectList)):
+        createWindow(subjectList[i], bodyList[i], emailList[i])
 
 
 
 if(__name__ == "__main__"):
     main()
-
